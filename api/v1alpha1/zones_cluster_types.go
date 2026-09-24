@@ -44,6 +44,12 @@ type ZonesClusterSpec struct {
 	// Config defines the configuration of the cluster.
 	// +optional
 	Config *ClusterConfig `json:"config,omitempty"`
+	// PreventDeletion is a flag that indicates if the  should be locked to prevent deletion.
+	// +kubebuilder:default=false
+	PreventDeletion bool `json:"prevent_deletion,omitempty"`
+	// Paused is a flag that indicates if the  is paused.
+	// +kubebuilder:default=false
+	Paused bool `json:"paused,omitempty"`
 }
 
 // ZonesClusterStatus defines the observed state of a Zones cluster.
@@ -64,6 +70,9 @@ type ZonesClusterStatus struct {
 	KubeconfigSecretRef *SecretKeyRef `json:"kubeconfigSecretRef,omitempty"`
 }
 
+// +genclient
+// +genclient:nonNamespaced
+// +genreconciler
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,shortName=zone

@@ -4,16 +4,23 @@ VERSION 				?= latest
 
 GO 							?= go
 GO_TOOL 				?= $(GO) tool
-GO_TEST 				?= $(GO_TOOL) gotest.tools/gotestsum --format pkgname
-GO_RELEASER 		?= $(GO_TOOL) github.com/goreleaser/goreleaser/v2
-GO_MOD 					?= $(shell ${GO} list -m)
-GO_LINT 				?= $(GO_TOOL) github.com/golangci/golangci-lint/v2/cmd/golangci-lint
-GO_KUSTOMIZE 		?= $(GO_TOOL) sigs.k8s.io/kustomize/kustomize/v5
 GO_HELM_UPDATE 	?= $(GO_RUN_TOOLS) github.com/zeiss/pkg/cmd/helm/update
+GO_KIND 				?= $(GO_TOOL) sigs.k8s.io/kind/cmd/kind
+GO_KUSTOMIZE 		?= $(GO_TOOL) sigs.k8s.io/kustomize/kustomize/v5
+GO_LINT 				?= $(GO_TOOL) github.com/golangci/golangci-lint/v2/cmd/golangci-lint
+GO_MOD 					?= $(shell ${GO} list -m)
+GO_RELEASER 		?= $(GO_TOOL) github.com/goreleaser/goreleaser/v2
+GO_TEST 				?= $(GO_TOOL) gotest.tools/gotestsum --format pkgname
+GO_AIR 					?= $(GO_TOOL) github.com/air-verse/air
 
+# Variables
+REPO 					  ?= $(GITHUB_REPO)
+TOKEN 					?= $(GITHUB_TOKEN)
+CLUSTER_NAME		?= kind-charts-cluster
+CLUSTER_CONFIG	?= cluster.yaml
 BASE_DIR				?= $(CURDIR)
 PWD 						?= $(shell pwd)
-IMAGE_TAG_BASE 	?= ghcr.io/ZEISS/zones-operator/operator
+IMAGE_TAG_BASE 	?= ghcr.io/zeiss/zones-operator/operator
 IMG 						?= $(IMAGE_TAG_BASE):$(VERSION)
 
 ifndef ignore-not-found
@@ -37,7 +44,8 @@ up: ## Run the operator locally.
 	$(GO_RUN_TOOLS) github.com/zeiss/pkg/cmd/runproc -f ${PWD}/Procfile -l ${PWD}/Procfile.local
 
 .PHONY: start
-start: up ## Alias for up.
+start: ## Run the operator locally with hot reloading.
+	$(GO_AIR) -c .air.toml
 
 .PHONY: install
 install: manifests ## Install CRDs into the K8s cluster specified in ~/.kube/config.
@@ -64,6 +72,7 @@ setup: ## Setup the development environment.
 generate: ## Generate code.
 	$(GO) generate ./...
 	$(GO_KUSTOMIZE) build manifests/crd > $(BASE_DIR)/helm/crds/crds.yaml
+	@echo "✅ Successfully generated CRDs."
 
 .PHONY: helm/update
 helm/update: ## Update helm dependencies.
@@ -85,6 +94,20 @@ test: fmt vet ## Run tests.
 .PHONY: lint
 lint: ## Run lint.
 	$(GO_LINT) run --timeout 10m -c .golangci.yml
+
+.PHONY: cluster-create
+cluster-create: ## Create a local Kubernetes cluster using kind.
+	$(GO_KIND) create cluster --config $(CLUSTER_CONFIG)
+	@echo "✅ Kind cluster created successfully."
+
+.PHONY: cluster-delete
+cluster-delete: ## Destroy the local Kubernetes cluster using kind.
+	$(GO_KIND) delete cluster --name $(CLUSTER_NAME)
+	@echo "✅ Kind cluster destroyed successfully."
+
+.PHONY: k9s
+k9s: ## Open K9s dashboard for the local Kubernetes cluster.
+	$(GO_K9S)
 
 .PHONY: clean
 clean: ## Remove previous build.

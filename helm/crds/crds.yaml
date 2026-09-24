@@ -69,6 +69,15 @@ spec:
               namespace:
                 description: Namespace is the namespace of the cluster.
                 type: string
+              paused:
+                default: false
+                description: Paused is a flag that indicates if the  is paused.
+                type: boolean
+              prevent_deletion:
+                default: false
+                description: PreventDeletion is a flag that indicates if the  should
+                  be locked to prevent deletion.
+                type: boolean
               resources:
                 description: Resources defines the desired resources for the cluster.
                 properties:
