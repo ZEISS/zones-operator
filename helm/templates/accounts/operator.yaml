@@ -1,0 +1,25 @@
+{{- if .Values.config.operator.create }}
+apiVersion: zones.zeiss.com/v1alpha1
+kind: NatsKey
+metadata:
+  name: {{ include "zones-operator.name" . }}-operator-private-key
+spec:
+  type: Operator
+---
+apiVersion: zones.zeiss.com/v1alpha1
+kind: NatsKey
+metadata:
+  name: {{ include "zones-operator.name" . }}-operator-signing-key
+spec:
+  type: Operator
+---
+apiVersion: zones.zeiss.com/v1alpha1
+kind: NatsOperator
+metadata:
+  name: {{ include "zones-operator.name" . }}
+spec:
+  privateKey:
+    name: {{ include "zones-operator.name" . }}-operator-private-key
+  signingKeys:
+    - name: {{ include "zones-operator.name" . }}-operator-signing-key
+{{- end }}

@@ -1,0 +1,84 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "zones-operator.fullname" . }}-manager-role
+  labels:
+  {{- include "zones-operator.labels" . | nindent 4 }}
+rules:
+- resources:
+  - events
+  apiGroups:
+  - ""
+  - events.k8s.io
+  verbs:
+  - create
+  - patch
+  - update
+- resources:
+  - configmaps
+  apiGroups:
+  - ""
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- resources:
+  - secrets
+  apiGroups:
+  - ""
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - zones.zeiss.com
+  resources:
+  - natskeys
+  - natsaccounts
+  - natsoperators
+  - natsusers
+  - natsconfigs
+  - natsgateways
+  - natsactivations
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - zones.zeiss.com
+  resources:
+  - natsaccounts/finalizers
+  - natsoperators/finalizers
+  - natsusers/finalizers
+  - natsconfigs/finalizers
+  - natsgateways/finalizers
+  - natsactivations/finalizers
+  - natskeys/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - zones.zeiss.com
+  resources:
+  - natsoperators/status
+  - natsusers/status
+  - natsgateways/status
+  - natsconfigs/status
+  - natsaccounts/status
+  - natsactivations/status
+  - natskeys/status
+  verbs:
+  - get
+  - patch
+  - update

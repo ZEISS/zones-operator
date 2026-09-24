@@ -1,0 +1,18 @@
+apiVersion: v2
+type: application
+kubeVersion: ">=1.26.0-0"
+description: |
+  A helm chart for thezones zones operator that operates multiple vClusters
+name: zones-operator
+version: 0.0.1
+appVersion: "0.0.1"
+home: https://github.com/zeiss/zones-operator
+sources:
+  - https://github.com/zeiss/zones-operator/tree/main/helm/charts/zones-operator
+  - https://github.com/zeiss/zones-operator
+keywords:
+  - nats
+  - accounting
+maintainers:
+  - name: Sebastian Doell
+    url: https://github.com/katallaxie
