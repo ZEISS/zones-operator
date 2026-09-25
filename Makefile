@@ -11,7 +11,6 @@ GO_LINT 				?= $(GO_TOOL) github.com/golangci/golangci-lint/v2/cmd/golangci-lint
 GO_MOD 					?= $(shell ${GO} list -m)
 GO_RELEASER 		?= $(GO_TOOL) github.com/goreleaser/goreleaser/v2
 GO_TEST 				?= $(GO_TOOL) gotest.tools/gotestsum --format pkgname
-GO_AIR 					?= $(GO_TOOL) github.com/air-verse/air
 
 # Variables
 REPO 					  ?= $(GITHUB_REPO)
@@ -104,10 +103,6 @@ cluster-create: ## Create a local Kubernetes cluster using kind.
 cluster-delete: ## Destroy the local Kubernetes cluster using kind.
 	$(GO_KIND) delete cluster --name $(CLUSTER_NAME)
 	@echo "✅ Kind cluster destroyed successfully."
-
-.PHONY: k9s
-k9s: ## Open K9s dashboard for the local Kubernetes cluster.
-	$(GO_K9S)
 
 .PHONY: clean
 clean: ## Remove previous build.
