@@ -2,10 +2,12 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"math"
 	"time"
 
 	zonesv1alpha1 "github.com/zeiss/zones-operator/api/v1alpha1"
+	"github.com/zeiss/zones-operator/pkg/provisioner"
 	"github.com/zeiss/zones-operator/pkg/status"
 
 	"github.com/zeiss/pkg/conv"
@@ -14,11 +16,12 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
@@ -45,16 +48,18 @@ const (
 // ZonesClusterOperatorReconciler ...
 type ZonesClusterOperatorReconciler struct {
 	client.Client
-	Scheme   *runtime.Scheme
-	Recorder record.EventRecorder
+	provisioner *provisioner.HelmProvisioner
+	Scheme      *runtime.Scheme
+	Recorder    record.EventRecorder
 }
 
 // NewZonesClusterOperatorReconciler ...
 func NewZonesClusterOperatorReconciler(mgr ctrl.Manager) *ZonesClusterOperatorReconciler {
 	return &ZonesClusterOperatorReconciler{
-		Client:   mgr.GetClient(),
-		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor(EventRecorderLabel),
+		Client:      mgr.GetClient(),
+		Scheme:      mgr.GetScheme(),
+		provisioner: provisioner.NewHelmProvisioner(provisioner.WithRestConfig(mgr.GetConfig())),
+		Recorder:    mgr.GetEventRecorderFor(EventRecorderLabel),
 	}
 }
 
@@ -76,10 +81,7 @@ func NewZonesClusterOperatorReconciler(mgr ctrl.Manager) *ZonesClusterOperatorRe
 // +kubebuilder:rbac:groups=coordination.k8s.io,resources=leases,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile ...
-// nolint:gocyclo
 func (r *ZonesClusterOperatorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	log := logf.FromContext(ctx)
-
 	cluster := &zonesv1alpha1.ZonesCluster{}
 	if err := r.Get(ctx, req.NamespacedName, cluster); err != nil {
 		// Request object not found, could have been deleted after reconcile request.
@@ -94,13 +96,16 @@ func (r *ZonesClusterOperatorReconciler) Reconcile(ctx context.Context, req ctrl
 		return r.reconcilePaused(ctx, cluster)
 	}
 
-	// get latest version of the account
+	// get latest version of the cluster
 	if err := r.Get(ctx, req.NamespacedName, cluster); err != nil {
 		return reconcile.Result{}, err
 	}
 
-	err := r.reconcileResources(ctx, cluster)
-	if err != nil {
+	if err := r.reconcileNamespace(ctx, cluster); err != nil {
+		return r.ManageError(ctx, cluster, err)
+	}
+
+	if err := r.reconcileResources(ctx, cluster); err != nil {
 		return r.ManageError(ctx, cluster, err)
 	}
 
@@ -125,13 +130,41 @@ func (r *ZonesClusterOperatorReconciler) reconcileResources(ctx context.Context,
 }
 
 func (r *ZonesClusterOperatorReconciler) reconcileOperator(ctx context.Context, obj *zonesv1alpha1.ZonesCluster) error {
-	log := logf.FromContext(ctx)
-
 	return nil
 }
 
 func (r *ZonesClusterOperatorReconciler) reconcileDelete(ctx context.Context, operator *zonesv1alpha1.ZonesCluster) (ctrl.Result, error) {
 	return ctrl.Result{Requeue: true}, nil
+}
+
+func (r *ZonesClusterOperatorReconciler) reconcileNamespace(ctx context.Context, operator *zonesv1alpha1.ZonesCluster) error {
+	namespace := &corev1.Namespace{}
+	name := types.NamespacedName{Name: operator.Spec.Namespace}
+	err := r.Get(ctx, name, namespace)
+	if err == nil {
+		return nil
+	}
+
+	if !errors.IsNotFound(err) {
+		return err
+	}
+
+	namespace = &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   operator.Spec.Namespace,
+			Labels: map[string]string{},
+		},
+	}
+
+	if err := controllerutil.SetControllerReference(operator, namespace, r.Scheme); err != nil {
+		return fmt.Errorf("setting owner reference: %w", err)
+	}
+
+	if err := r.Create(ctx, namespace); err != nil {
+		return fmt.Errorf("creating namespace: %w", err)
+	}
+
+	return nil
 }
 
 // IsCreating ...

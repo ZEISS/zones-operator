@@ -2,25 +2,25 @@
 
 VERSION 				?= latest
 
-GO 						?= go
+GO 							?= go
 GO_TOOL 				?= $(GO) tool
-GO_HELM_UPDATE 			?= $(GO_RUN_TOOLS) github.com/zeiss/pkg/cmd/helm/update
+GO_HELM_UPDATE 	?= $(GO_RUN_TOOLS) github.com/zeiss/pkg/cmd/helm/update
 GO_KIND 				?= $(GO_TOOL) sigs.k8s.io/kind/cmd/kind
-GO_KUSTOMIZE 			?= $(GO_TOOL) sigs.k8s.io/kustomize/kustomize/v5
+GO_KUSTOMIZE 		?= $(GO_TOOL) sigs.k8s.io/kustomize/kustomize/v5
 GO_LINT 				?= $(GO_TOOL) github.com/golangci/golangci-lint/v2/cmd/golangci-lint
 GO_MOD 					?= $(shell ${GO} list -m)
-GO_RELEASER 			?= $(GO_TOOL) github.com/goreleaser/goreleaser/v2
+GO_RELEASER 		?= $(GO_TOOL) github.com/goreleaser/goreleaser/v2
 GO_TEST 				?= $(GO_TOOL) gotest.tools/gotestsum --format pkgname
 
 # Variables
-REPO 					?= $(GITHUB_REPO)
+REPO 						?= $(GITHUB_REPO)
 TOKEN 					?= $(GITHUB_TOKEN)
-CLUSTER_NAME			?= kind-charts-cluster
-CLUSTER_CONFIG			?= cluster.yaml
+CLUSTER_NAME		?= kind-zones-operator
+CLUSTER_CONFIG	?= cluster.yaml
 BASE_DIR				?= $(CURDIR)
-PWD 					?= $(shell pwd)
+PWD 						?= $(shell pwd)
 IMAGE_TAG_BASE 	?= ghcr.io/zeiss/zones-operator/operator
-IMG 					?= $(IMAGE_TAG_BASE):$(VERSION)
+IMG 						?= $(IMAGE_TAG_BASE):$(VERSION)
 
 ifeq ($(firstword $(MAKECMDGOALS)),$(TARGET))
   RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
@@ -109,6 +109,11 @@ cluster-create: ## Create a local Kubernetes cluster using kind.
 cluster-delete: ## Destroy the local Kubernetes cluster using kind.
 	$(GO_KIND) delete cluster --name $(CLUSTER_NAME)
 	@echo "✅ Kind cluster destroyed successfully."
+
+.PHONY: cluster-config
+cluster-config: ## Start the local Kubernetes cluster using kind.
+	$(GO_KIND) export kubeconfig --name $(CLUSTER_NAME)
+	@echo "✅ Kind cluster configuration exported successfully."
 
 .PHONY: clean
 clean: ## Remove previous build.

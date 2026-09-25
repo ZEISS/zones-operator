@@ -1,0 +1,7 @@
+apiVersion: zones.zeiss.com/v1alpha1
+kind: ZonesCluster
+metadata:
+  name: team-delta
+spec:
+  name: team-delta
+  namespace: team-delta
