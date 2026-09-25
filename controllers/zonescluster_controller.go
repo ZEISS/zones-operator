@@ -18,6 +18,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
@@ -57,39 +58,53 @@ func NewZonesClusterOperatorReconciler(mgr ctrl.Manager) *ZonesClusterOperatorRe
 	}
 }
 
-//+kubebuilder:rbac:groups=natz.zeiss.com,resources=natsoperators,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=natz.zeiss.com,resources=natsoperators/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=natz.zeiss.com,resources=natsoperators/finalizers,verbs=update
-//+kubebuilder:rbac:groups=,resources=secrets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=zones.zeiss.com,resources=zonesclusters,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=zones.zeiss.com,resources=zonesclusters/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=zones.zeiss.com,resources=zonesclusters/finalizers,verbs=update
+// +kubebuilder:rbac:groups=,resources=secrets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=resourcequotas;limitranges,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=secrets;configmaps;serviceaccounts;services;endpoints;persistentvolumeclaims;pods,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=events,verbs=create;patch
+// +kubebuilder:rbac:groups=apps,resources=statefulsets;deployments;replicasets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=roles;rolebindings;clusterroles;clusterrolebindings,verbs=get;list;watch;create;update;patch;delete;bind;escalate
+// +kubebuilder:rbac:groups=networking.k8s.io,resources=ingresses;networkpolicies,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=gateway.networking.k8s.io,resources=tlsroutes;referencegrants,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=gateway.networking.k8s.io,resources=gateways,verbs=get;list;watch;update;patch
+// +kubebuilder:rbac:groups=cert-manager.io,resources=certificates,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=policy,resources=poddisruptionbudgets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=coordination.k8s.io,resources=leases,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile ...
 // nolint:gocyclo
 func (r *ZonesClusterOperatorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	operator := &zonesv1alpha1.ZonesCluster{}
-	if err := r.Get(ctx, req.NamespacedName, operator); err != nil {
+	log := logf.FromContext(ctx)
+
+	cluster := &zonesv1alpha1.ZonesCluster{}
+	if err := r.Get(ctx, req.NamespacedName, cluster); err != nil {
 		// Request object not found, could have been deleted after reconcile request.
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	if !operator.ObjectMeta.DeletionTimestamp.IsZero() {
-		return r.reconcileDelete(ctx, operator)
+	if !cluster.ObjectMeta.DeletionTimestamp.IsZero() {
+		return r.reconcileDelete(ctx, cluster)
 	}
 
-	if operator.Spec.Paused {
-		return r.reconcilePaused(ctx, operator)
+	if cluster.Spec.Paused {
+		return r.reconcilePaused(ctx, cluster)
 	}
 
 	// get latest version of the account
-	if err := r.Get(ctx, req.NamespacedName, operator); err != nil {
+	if err := r.Get(ctx, req.NamespacedName, cluster); err != nil {
 		return reconcile.Result{}, err
 	}
 
-	err := r.reconcileResources(ctx, operator)
+	err := r.reconcileResources(ctx, cluster)
 	if err != nil {
-		return r.ManageError(ctx, operator, err)
+		return r.ManageError(ctx, cluster, err)
 	}
 
-	return r.ManageSuccess(ctx, operator)
+	return r.ManageSuccess(ctx, cluster)
 }
 
 func (r *ZonesClusterOperatorReconciler) reconcilePaused(ctx context.Context, sk *zonesv1alpha1.ZonesCluster) (ctrl.Result, error) {
@@ -110,6 +125,8 @@ func (r *ZonesClusterOperatorReconciler) reconcileResources(ctx context.Context,
 }
 
 func (r *ZonesClusterOperatorReconciler) reconcileOperator(ctx context.Context, obj *zonesv1alpha1.ZonesCluster) error {
+	log := logf.FromContext(ctx)
+
 	return nil
 }
 
@@ -148,7 +165,7 @@ func (r *ZonesClusterOperatorReconciler) ManageError(ctx context.Context, obj *z
 		return ctrl.Result{Requeue: true, RequeueAfter: time.Second}, err
 	}
 
-	r.Recorder.Event(obj, corev1.EventTypeWarning, conv.String(EventReasonOperatorSynchronizeFailed), "operator synchronization failed")
+	r.Recorder.Event(obj, corev1.EventTypeWarning, conv.String(EventReasonOperatorSynchronizeFailed), "cluster synchronization failed")
 
 	var retryInterval time.Duration
 
