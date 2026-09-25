@@ -2,15 +2,16 @@
 
 VERSION 				?= latest
 
-GO 							?= go
-GO_TOOL 				?= $(GO) tool
-GO_HELM_UPDATE 	?= $(GO_RUN_TOOLS) github.com/zeiss/pkg/cmd/helm/update
-GO_KIND 				?= $(GO_TOOL) sigs.k8s.io/kind/cmd/kind
+GO 					?= go
+GO_TOOL 			?= $(GO) tool
+GO_HELM_UPDATE 		?= $(GO_RUN_TOOLS) github.com/zeiss/pkg/cmd/helm/update
+GO_KIND 			?= $(GO_TOOL) sigs.k8s.io/kind/cmd/kind
 GO_KUSTOMIZE 		?= $(GO_TOOL) sigs.k8s.io/kustomize/kustomize/v5
-GO_LINT 				?= $(GO_TOOL) github.com/golangci/golangci-lint/v2/cmd/golangci-lint
-GO_MOD 					?= $(shell ${GO} list -m)
+GO_LINT 			?= $(GO_TOOL) github.com/golangci/golangci-lint/v2/cmd/golangci-lint
+GO_MOD 				?= $(shell ${GO} list -m)
 GO_RELEASER 		?= $(GO_TOOL) github.com/goreleaser/goreleaser/v2
-GO_TEST 				?= $(GO_TOOL) gotest.tools/gotestsum --format pkgname
+GO_TEST 			?= $(GO_TOOL) gotest.tools/gotestsum --format pkgname
+GO_AIR 				?= $(GO_TOOL) github.com/air-verse/air
 
 # Variables
 REPO 						?= $(GITHUB_REPO)

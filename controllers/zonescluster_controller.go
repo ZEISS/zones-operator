@@ -30,7 +30,7 @@ import (
 )
 
 const (
-	EventRecorderLabel = "natz-controller"
+	EventRecorderLabel = "zones-controller"
 )
 
 type EventReason string
@@ -102,6 +102,13 @@ func (r *ZonesClusterOperatorReconciler) Reconcile(ctx context.Context, req ctrl
 		return reconcile.Result{}, err
 	}
 
+	status.SetZonesClusterCondition(cluster, status.NewZonesClusterPending(cluster))
+	cluster.Status.Phase = zonesv1alpha1.OperationFailed
+
+	if err := r.Client.Status().Update(ctx, cluster); err != nil {
+		return r.ManageError(ctx, cluster, err)
+	}
+
 	if err := r.reconcileResources(ctx, cluster); err != nil {
 		return r.ManageError(ctx, cluster, err)
 	}
@@ -155,6 +162,10 @@ func (r *ZonesClusterOperatorReconciler) reconcileNamespace(ctx context.Context,
 		return fmt.Errorf("setting owner reference: %w", err)
 	}
 
+	namespace = &corev1.Namespace{
+		Name: cluster.Spec.Namespace,
+	}
+
 	if err := r.Create(ctx, namespace); err != nil {
 		return fmt.Errorf("creating namespace: %w", err)
 	}
@@ -164,7 +175,25 @@ func (r *ZonesClusterOperatorReconciler) reconcileNamespace(ctx context.Context,
 
 // reconcileVCluster reconciles the vcluster workload for the given operator.
 func (r *ZonesClusterOperatorReconciler) reconcileVCluster(ctx context.Context, cluster *zonesv1alpha1.ZonesCluster) error {
-	_, _, err := r.vclusterReady(ctx, cluster, cluster.Spec.Namespace)
+	req := provisioner.Request{
+		ReleaseName:  "demo",
+		Namespace:    cluster.Spec.Namespace,
+		ChartVersion: provisioner.DefaultChartVersion,
+		RepoURL:      provisioner.DefaultChartRef,
+	}
+
+	if err := r.provisioner.Install(ctx, req); err != nil {
+		return fmt.Errorf("installing vcluster: %w", err)
+	}
+
+	ready, _, err := r.vclusterReady(ctx, cluster, cluster.Spec.Namespace)
+	if err != nil {
+		return fmt.Errorf("vcluster not ready: %w", err)
+	}
+
+	if !ready {
+
+	}
 
 	return err
 }
@@ -240,6 +269,11 @@ func (r *ZonesClusterOperatorReconciler) vClusterDeploymentReady(ctx context.Con
 	return false, fmt.Sprintf("waiting for vCluster workload %s/%s to appear", namespace, name), nil
 }
 
+// IsAccepted ...
+func (r *ZonesClusterOperatorReconciler) IsAccepted(obj *zonesv1alpha1.ZonesCluster) bool {
+	return obj.Status.Phase == zonesv1alpha1.OperationAccepted
+}
+
 // IsCreating ...
 func (r *ZonesClusterOperatorReconciler) IsCreating(obj *zonesv1alpha1.ZonesCluster) bool {
 	return utilx.Or(obj.Status.Conditions == nil, slices.Len(0, obj.Status.Conditions...))
@@ -282,17 +316,21 @@ func (r *ZonesClusterOperatorReconciler) ManageError(ctx context.Context, obj *z
 }
 
 // ManageSuccess ...
-func (r *ZonesClusterOperatorReconciler) ManageSuccess(ctx context.Context, obj *zonesv1alpha1.ZonesCluster) (ctrl.Result, error) {
-	obj.Status.Phase = zonesv1alpha1.OperationSynchronized
-	obj.Status.LastUpdate = metav1.Now()
-	status.SetZonesClusterCondition(obj, status.NewZonesClusterSynchronizedCondition(obj))
+func (r *ZonesClusterOperatorReconciler) ManageSuccess(ctx context.Context, cluster *zonesv1alpha1.ZonesCluster) (ctrl.Result, error) {
+	if r.IsSynchronized(cluster) {
+		return ctrl.Result{}, nil
+	}
 
-	err := r.Status().Update(ctx, obj)
+	cluster.Status.Phase = zonesv1alpha1.OperationSynchronized
+	cluster.Status.LastUpdate = metav1.Now()
+	status.SetZonesClusterCondition(cluster, status.NewZonesClusterSynchronizedCondition(cluster))
+
+	err := r.Status().Update(ctx, cluster)
 	if err != nil {
 		return ctrl.Result{Requeue: true, RequeueAfter: time.Second}, err
 	}
 
-	r.Recorder.Event(obj, corev1.EventTypeNormal, conv.String(EventReasonOperatorSynchronized), "operator synchronized")
+	r.Recorder.Event(cluster, corev1.EventTypeNormal, conv.String(EventReasonOperatorSynchronized), "operator synchronized")
 
 	return ctrl.Result{}, nil
 }

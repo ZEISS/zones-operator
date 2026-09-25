@@ -19,10 +19,12 @@ const (
 	ConditionTypeSynchronizing = "Sychronizing"
 	ConditionTypeSynchronized  = "Synchronized"
 	ConditionTypeFailed        = "Failed"
+	ConditionTypePending       = "Pending"
 )
 
 const (
 	ConditionReasonCreated      = "Created"
+	ConditionReasonPending      = "Pending"
 	ConditionReasonSynchronized = "Synchronized"
 	ConditionReasonFailed       = "Failed"
 )
@@ -36,6 +38,7 @@ const (
 type OperationPhase string
 
 const (
+	OperationAccepted     OperationPhase = ""
 	OperationCreating     OperationPhase = "Creating"
 	OperationDeleting     OperationPhase = "Deleting"
 	OperationError        OperationPhase = "Error"

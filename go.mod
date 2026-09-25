@@ -3,6 +3,7 @@ module github.com/zeiss/zones-operator
 go 1.27.1
 
 tool (
+	github.com/air-verse/air
 	github.com/derailed/k9s
 	github.com/golang/mock/mockgen/model
 	github.com/golangci/golangci-lint/v2/cmd/golangci-lint
@@ -94,6 +95,7 @@ require (
 	github.com/acobaugh/osrelease v0.1.0 // indirect
 	github.com/adrg/xdg v0.5.3 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
+	github.com/air-verse/air v1.67.4 // indirect
 	github.com/alecthomas/chroma/v2 v2.27.0 // indirect
 	github.com/alecthomas/go-check-sumtype v0.5.1-0.20260828200218-ae6904d28606 // indirect
 	github.com/alexkohler/nakedret/v2 v2.0.6 // indirect
@@ -149,9 +151,12 @@ require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/becheran/wildmatch-go v1.0.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/bep/godartsass/v2 v2.5.0 // indirect
+	github.com/bep/golibsass v1.2.0 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/bitfield/gotestdox v0.2.2 // indirect
 	github.com/bitnami/go-version v0.0.0-20250505154626-452e8c5ee607 // indirect
+	github.com/bits-and-blooms/bitset v1.24.6 // indirect
 	github.com/bkielbasa/cyclop v1.2.3 // indirect
 	github.com/blakesmith/ar v0.0.0-20190502131153-809d4375e1fb // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
@@ -306,6 +311,7 @@ require (
 	github.com/gofrs/flock v0.13.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/gohugoio/hashstructure v0.6.0 // indirect
+	github.com/gohugoio/hugo v0.164.0 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
 	github.com/golang/mock v1.7.0-rc.1 // indirect
@@ -374,6 +380,7 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/jjti/go-spancheck v0.6.5 // indirect
 	github.com/jmoiron/sqlx v1.4.0 // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/julz/importas v0.2.0 // indirect
 	github.com/karamaru-alpha/copyloopvar v1.2.2 // indirect
@@ -539,6 +546,7 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/sylabs/sif/v2 v2.24.0 // indirect
 	github.com/sylabs/squashfs v1.0.6 // indirect
+	github.com/tdewolff/parse/v2 v2.8.12 // indirect
 	github.com/tetafro/godot v1.5.6 // indirect
 	github.com/therootcompany/xz v1.0.1 // indirect
 	github.com/theupdateframework/go-tuf v0.7.0 // indirect

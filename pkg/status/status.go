@@ -47,6 +47,18 @@ func NewZonesClusterFailed(obj *zonesv1alpha1.ZonesCluster, err error) metav1.Co
 	}
 }
 
+// NewZonesClusterPending creates the provisioning started condition in cluster conditions.
+func NewZonesClusterPending(obj *zonesv1alpha1.ZonesCluster) metav1.Condition {
+	return metav1.Condition{
+		Type:               zonesv1alpha1.ConditionTypePending,
+		ObservedGeneration: obj.Generation,
+		Status:             metav1.ConditionTrue,
+		LastTransitionTime: metav1.Now(),
+		Message:            "cluster pending",
+		Reason:             zonesv1alpha1.ConditionReasonPending,
+	}
+}
+
 // NewZonesClusterSynchronizedCondition ...
 func NewZonesClusterSynchronizedCondition(obj *zonesv1alpha1.ZonesCluster) metav1.Condition {
 	return metav1.Condition{

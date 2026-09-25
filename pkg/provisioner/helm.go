@@ -71,17 +71,39 @@ func NewHelmProvisioner(opts ...Opt) *HelmProvisioner {
 
 // Install installs the Helm chart using the specified options.
 func (h *HelmProvisioner) Install(ctx context.Context, req Request) error {
-	history := action.NewHistory(nil)
+	log := logf.FromContext(ctx).WithName("helm")
+
+	cfg := new(action.Configuration)
+	getter := &restClientGetter{
+		restConfig: h.Opts.RestConfig,
+		namespace:  req.Namespace,
+	}
+
+	err := cfg.Init(getter, req.Namespace, "secret", func(format string, v ...interface{}) {
+		log.V(1).Info(fmt.Sprintf(format, v...))
+	})
+	if err != nil {
+		return err
+	}
+
+	rc, err := registry.NewClient()
+	if err != nil {
+		return fmt.Errorf("creating helm registry client: %w", err)
+	}
+
+	cfg.RegistryClient = rc
+
+	history := action.NewHistory(cfg)
 	history.Max = 1
 
-	_, err := history.Run(req.ReleaseName)
+	_, err = history.Run(req.ReleaseName)
 	releaseExists := utilx.NotNil(err)
 	if err != nil && !errors.Is(err, driver.ErrReleaseExists) {
 		return err
 	}
 
 	if !releaseExists {
-		return h.install(ctx, req)
+		return h.install(ctx, cfg, req)
 	}
 
 	return nil
@@ -93,10 +115,11 @@ func (h *HelmProvisioner) Status(ctx context.Context, req Request) (string, erro
 
 	cfg := new(action.Configuration)
 	getter := &restClientGetter{
-		namespace: req.Namespace,
+		restConfig: h.Opts.RestConfig,
+		namespace:  req.Namespace,
 	}
 
-	err := cfg.Init(getter, req.Namespace, driver.SecretsDriverName, func(format string, v ...interface{}) {
+	err := cfg.Init(getter, req.Namespace, "secret", func(format string, v ...interface{}) {
 		log.V(1).Info(fmt.Sprintf(format, v...))
 	})
 	if err != nil {
@@ -120,8 +143,8 @@ func (h *HelmProvisioner) Status(ctx context.Context, req Request) (string, erro
 	return rel.Info.Status.String(), nil
 }
 
-func (h *HelmProvisioner) install(ctx context.Context, req Request) error {
-	install := action.NewInstall(nil)
+func (h *HelmProvisioner) install(ctx context.Context, cfg *action.Configuration, req Request) error {
+	install := action.NewInstall(cfg)
 	install.ReleaseName = req.ReleaseName
 	install.Namespace = req.Namespace
 	install.CreateNamespace = false
