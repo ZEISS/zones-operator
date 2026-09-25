@@ -7,6 +7,7 @@ import (
 
 const (
 	ZonesNameSpacePrefix = "zones-tenant"
+	KubeconfigSecretKey  = "config"
 )
 
 const (

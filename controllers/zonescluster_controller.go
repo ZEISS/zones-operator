@@ -13,6 +13,7 @@ import (
 	"github.com/zeiss/pkg/conv"
 	"github.com/zeiss/pkg/slices"
 	"github.com/zeiss/pkg/utilx"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -101,10 +102,6 @@ func (r *ZonesClusterOperatorReconciler) Reconcile(ctx context.Context, req ctrl
 		return reconcile.Result{}, err
 	}
 
-	if err := r.reconcileNamespace(ctx, cluster); err != nil {
-		return r.ManageError(ctx, cluster, err)
-	}
-
 	if err := r.reconcileResources(ctx, cluster); err != nil {
 		return r.ManageError(ctx, cluster, err)
 	}
@@ -125,21 +122,26 @@ func (r *ZonesClusterOperatorReconciler) reconcilePaused(ctx context.Context, sk
 	return ctrl.Result{}, nil
 }
 
-func (r *ZonesClusterOperatorReconciler) reconcileResources(ctx context.Context, operator *zonesv1alpha1.ZonesCluster) error {
-	return r.reconcileOperator(ctx, operator)
-}
+func (r *ZonesClusterOperatorReconciler) reconcileResources(ctx context.Context, cluster *zonesv1alpha1.ZonesCluster) error {
+	if err := r.reconcileNamespace(ctx, cluster); err != nil {
+		return err
+	}
 
-func (r *ZonesClusterOperatorReconciler) reconcileOperator(ctx context.Context, obj *zonesv1alpha1.ZonesCluster) error {
+	if err := r.reconcileVCluster(ctx, cluster); err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func (r *ZonesClusterOperatorReconciler) reconcileDelete(ctx context.Context, operator *zonesv1alpha1.ZonesCluster) (ctrl.Result, error) {
+func (r *ZonesClusterOperatorReconciler) reconcileDelete(ctx context.Context, cluster *zonesv1alpha1.ZonesCluster) (ctrl.Result, error) {
 	return ctrl.Result{Requeue: true}, nil
 }
 
-func (r *ZonesClusterOperatorReconciler) reconcileNamespace(ctx context.Context, operator *zonesv1alpha1.ZonesCluster) error {
+// reconcileNamespace reconciles the namespace for the cluster.
+func (r *ZonesClusterOperatorReconciler) reconcileNamespace(ctx context.Context, cluster *zonesv1alpha1.ZonesCluster) error {
 	namespace := &corev1.Namespace{}
-	name := types.NamespacedName{Name: operator.Spec.Namespace}
+	name := types.NamespacedName{Name: cluster.Spec.Namespace}
 	err := r.Get(ctx, name, namespace)
 	if err == nil {
 		return nil
@@ -149,14 +151,7 @@ func (r *ZonesClusterOperatorReconciler) reconcileNamespace(ctx context.Context,
 		return err
 	}
 
-	namespace = &corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:   operator.Spec.Namespace,
-			Labels: map[string]string{},
-		},
-	}
-
-	if err := controllerutil.SetControllerReference(operator, namespace, r.Scheme); err != nil {
+	if err := controllerutil.SetControllerReference(cluster, namespace, r.Scheme); err != nil {
 		return fmt.Errorf("setting owner reference: %w", err)
 	}
 
@@ -165,6 +160,84 @@ func (r *ZonesClusterOperatorReconciler) reconcileNamespace(ctx context.Context,
 	}
 
 	return nil
+}
+
+// reconcileVCluster reconciles the vcluster workload for the given operator.
+func (r *ZonesClusterOperatorReconciler) reconcileVCluster(ctx context.Context, cluster *zonesv1alpha1.ZonesCluster) error {
+	_, _, err := r.vclusterReady(ctx, cluster, cluster.Spec.Namespace)
+
+	return err
+}
+
+// vclusterReady returns true if the vcluster workload is ready and the kubeconfig secret is present.
+func (r *ZonesClusterOperatorReconciler) vclusterReady(ctx context.Context, operator *zonesv1alpha1.ZonesCluster, namespace string) (bool, string, error) {
+	workloadReady, reason, err := r.vClusterDeploymentReady(ctx, operator.Name, namespace)
+	if err != nil {
+		return false, "", err
+	}
+	if !workloadReady {
+		return false, reason, nil
+	}
+
+	secret := &corev1.Secret{}
+	secretName := operator.KubeconfigSecretName()
+	err = r.Get(ctx, types.NamespacedName{Name: secretName, Namespace: namespace}, secret)
+
+	if errors.IsNotFound(err) {
+		return false, fmt.Sprintf("waiting for kubeconfig secret %s/%s", namespace, secretName), nil
+	}
+
+	if err != nil {
+		return false, "", err
+	}
+
+	if _, ok := secret.Data[zonesv1alpha1.KubeconfigSecretKey]; !ok {
+		return false, fmt.Sprintf("kubeconfig secret %s/%s missing key %q", namespace, secretName, zonesv1alpha1.KubeconfigSecretKey), nil
+	}
+
+	return true, "", nil
+}
+
+// vClusterDeploymentReady returns true if the vcluster deployment is ready.
+func (r *ZonesClusterOperatorReconciler) vClusterDeploymentReady(ctx context.Context, name, namespace string) (bool, string, error) {
+	key := types.NamespacedName{Name: name, Namespace: namespace}
+
+	statefulSet := &appsv1.StatefulSet{}
+	err := r.Get(ctx, key, statefulSet)
+	if err == nil {
+		desired := int32(1)
+		if statefulSet.Spec.Replicas != nil {
+			desired = *statefulSet.Spec.Replicas
+		}
+		if desired > 0 && statefulSet.Status.ReadyReplicas >= desired {
+			return true, "", nil
+		}
+		return false, fmt.Sprintf("waiting for statefulset %s/%s: %d/%d replicas ready",
+			namespace, name, statefulSet.Status.ReadyReplicas, desired), nil
+	}
+
+	if !errors.IsNotFound(err) {
+		return false, "", err
+	}
+
+	deployment := &appsv1.Deployment{}
+	err = r.Get(ctx, key, deployment)
+	if err == nil {
+		desired := int32(1)
+		if deployment.Spec.Replicas != nil {
+			desired = *deployment.Spec.Replicas
+		}
+		if desired > 0 && deployment.Status.ReadyReplicas >= desired {
+			return true, "", nil
+		}
+		return false, fmt.Sprintf("waiting for deployment %s/%s: %d/%d replicas ready",
+			namespace, name, deployment.Status.ReadyReplicas, desired), nil
+	}
+	if !errors.IsNotFound(err) {
+		return false, "", err
+	}
+
+	return false, fmt.Sprintf("waiting for vCluster workload %s/%s to appear", namespace, name), nil
 }
 
 // IsCreating ...

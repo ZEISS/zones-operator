@@ -1,6 +1,8 @@
 package v1alpha1
 
 import (
+	"fmt"
+
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -86,6 +88,12 @@ type ZonesCluster struct {
 
 	Spec   ZonesClusterSpec   `json:"spec,omitempty"`
 	Status ZonesClusterStatus `json:"status,omitempty"`
+}
+
+// KubeconfigSecretName returns the name of the Secret vCluster writes the
+// virtual-cluster kubeconfig into (vc-<release>, release name = tenant name).
+func (z *ZonesCluster) KubeconfigSecretName() string {
+	return fmt.Sprintf("vc-%s", z.Name)
 }
 
 // +kubebuilder:object:root=true
