@@ -36,14 +36,11 @@ const (
 type EventReason string
 
 const (
-	EventReasonOperatorCreateFailed          EventReason = "OperatorCreateFailed"
-	EventReasonOperatorUpdateFailed          EventReason = "OperatorUpdateFailed"
-	EventReasonOperatorDeleteFailed          EventReason = "OperatorDeleteFailed"
-	EventReasonOperatorSecretCreateSucceeded EventReason = "OperatorSecretCreateSucceeded"
-	EventReasonOperatorSecretCreateFailed    EventReason = "OperatorSecretCreateFailed"
-	EventReasonOperatorSynchronized          EventReason = "OperatorSynchronized"
-	EventReasonOperatorFailed                EventReason = "OperatorFailed"
-	EventReasonOperatorSynchronizeFailed     EventReason = "OperatorSynchronizeFailed"
+	EventReasonClusterCreateFailed EventReason = "CreateFailed"
+	EventReasonClusterUpdateFailed EventReason = "UpdateFailed"
+	EventReasonClusterDeleteFailed EventReason = "DeleteFailed"
+	EventReasonClusterSynchronized EventReason = "Synchronized"
+	EventReasonClusterFailed       EventReason = "Failed"
 )
 
 // ZonesClusterOperatorReconciler ...
@@ -176,7 +173,7 @@ func (r *ZonesClusterOperatorReconciler) reconcileNamespace(ctx context.Context,
 // reconcileVCluster reconciles the vcluster workload for the given operator.
 func (r *ZonesClusterOperatorReconciler) reconcileVCluster(ctx context.Context, cluster *zonesv1alpha1.ZonesCluster) error {
 	req := provisioner.Request{
-		ReleaseName:  "demo",
+		ReleaseName:  cluster.Spec.Name,
 		Namespace:    cluster.Spec.Namespace,
 		ChartVersion: provisioner.DefaultChartVersion,
 		RepoURL:      provisioner.DefaultChartRef,
@@ -305,7 +302,7 @@ func (r *ZonesClusterOperatorReconciler) ManageError(ctx context.Context, obj *z
 		return ctrl.Result{Requeue: true, RequeueAfter: time.Second}, err
 	}
 
-	r.Recorder.Event(obj, corev1.EventTypeWarning, conv.String(EventReasonOperatorSynchronizeFailed), "cluster synchronization failed")
+	r.Recorder.Event(obj, corev1.EventTypeWarning, conv.String(EventReasonClusterFailed), "cluster synchronization failed")
 
 	var retryInterval time.Duration
 
@@ -330,7 +327,7 @@ func (r *ZonesClusterOperatorReconciler) ManageSuccess(ctx context.Context, clus
 		return ctrl.Result{Requeue: true, RequeueAfter: time.Second}, err
 	}
 
-	r.Recorder.Event(cluster, corev1.EventTypeNormal, conv.String(EventReasonOperatorSynchronized), "operator synchronized")
+	r.Recorder.Event(cluster, corev1.EventTypeNormal, conv.String(EventReasonClusterSynchronized), "cluster synchronized")
 
 	return ctrl.Result{}, nil
 }

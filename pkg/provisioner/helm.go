@@ -7,6 +7,8 @@ import (
 
 	"github.com/zeiss/pkg/utilx"
 	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/chart/loader"
+	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/registry"
 	"helm.sh/helm/v3/pkg/storage/driver"
 	"k8s.io/client-go/rest"
@@ -31,7 +33,10 @@ var _ Provisioner = (*HelmProvisioner)(nil)
 
 // HelmProvisioner is responsible for provisioning Zones clusters using Helm.
 type HelmProvisioner struct {
+	// Opts is the options for the HelmProvisioner.
 	Opts *Opts
+	// Settings is the settings for the HelmProvisioner.
+	Settings *cli.EnvSettings
 }
 
 // Opts is a struct holding the options for the HelmProvisioner.
@@ -65,7 +70,8 @@ func NewHelmProvisioner(opts ...Opt) *HelmProvisioner {
 	}
 
 	return &HelmProvisioner{
-		Opts: options,
+		Opts:     options,
+		Settings: cli.New(),
 	}
 }
 
@@ -79,7 +85,7 @@ func (h *HelmProvisioner) Install(ctx context.Context, req Request) error {
 		namespace:  req.Namespace,
 	}
 
-	err := cfg.Init(getter, req.Namespace, "secret", func(format string, v ...interface{}) {
+	err := cfg.Init(getter, req.Namespace, "secret", func(format string, v ...any) {
 		log.V(1).Info(fmt.Sprintf(format, v...))
 	})
 	if err != nil {
@@ -97,12 +103,12 @@ func (h *HelmProvisioner) Install(ctx context.Context, req Request) error {
 	history.Max = 1
 
 	_, err = history.Run(req.ReleaseName)
-	releaseExists := utilx.NotNil(err)
-	if err != nil && !errors.Is(err, driver.ErrReleaseExists) {
+	found := utilx.IsNil(err)
+	if err != nil && !errors.Is(err, driver.ErrReleaseNotFound) {
 		return err
 	}
 
-	if !releaseExists {
+	if !found {
 		return h.install(ctx, cfg, req)
 	}
 
@@ -149,14 +155,28 @@ func (h *HelmProvisioner) install(ctx context.Context, cfg *action.Configuration
 	install.Namespace = req.Namespace
 	install.CreateNamespace = false
 	install.Wait = false
-	install.RepoURL = req.RepoURL
-	install.Version = req.ChartVersion
+	install.ChartPathOptions = action.ChartPathOptions{
+		RepoURL: req.RepoURL,
+		Version: req.ChartVersion,
+	}
+
+	chartPath, err := install.ChartPathOptions.LocateChart(DefaultChartName, h.Settings)
+	if err != nil {
+		return fmt.Errorf("locating chart %q: %w", req.RepoURL, err)
+	}
+
+	ch, err := loader.Load(chartPath)
+	if err != nil {
+		return fmt.Errorf("loading chart from path %q: %w", registry.ChartLayerMediaType, err)
+	}
 
 	values := map[string]interface{}{}
 
-	_, err := install.RunWithContext(ctx, nil, values)
+	fmt.Println(ch)
+
+	_, err = install.RunWithContext(ctx, ch, values)
 	if err != nil {
-		return fmt.Errorf("installing vcluster release: %q: %w", req.ReleaseName, err)
+		return fmt.Errorf("failed to install chart: %q: %w", req.ReleaseName, err)
 	}
 
 	return nil
