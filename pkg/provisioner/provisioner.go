@@ -32,4 +32,6 @@ type Provisioner interface {
 	Install(ctx context.Context, req Request) error
 	// Status is getting the status of the vCluster release.
 	Status(ctx context.Context, req Request) (string, error)
+	// Uninstall is uninstalling the vCluster release.
+	Uninstall(ctx context.Context, req Request) error
 }

@@ -14,6 +14,7 @@ import (
 	"github.com/zeiss/pkg/slices"
 	"github.com/zeiss/pkg/utilx"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -23,10 +24,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-
-	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -100,7 +100,7 @@ func (r *ZonesClusterOperatorReconciler) Reconcile(ctx context.Context, req ctrl
 	}
 
 	status.SetZonesClusterCondition(cluster, status.NewZonesClusterPending(cluster))
-	cluster.Status.Phase = zonesv1alpha1.OperationFailed
+	cluster.Status.Phase = zonesv1alpha1.OperationCreating
 
 	if err := r.Client.Status().Update(ctx, cluster); err != nil {
 		return r.ManageError(ctx, cluster, err)
@@ -127,6 +127,13 @@ func (r *ZonesClusterOperatorReconciler) reconcilePaused(ctx context.Context, sk
 }
 
 func (r *ZonesClusterOperatorReconciler) reconcileResources(ctx context.Context, cluster *zonesv1alpha1.ZonesCluster) error {
+	if !controllerutil.ContainsFinalizer(cluster, zonesv1alpha1.FinalizerName) {
+		controllerutil.AddFinalizer(cluster, zonesv1alpha1.FinalizerName)
+		if err := r.Update(ctx, cluster); err != nil {
+			return fmt.Errorf("updating cluster %q: %w", cluster.Name, err)
+		}
+	}
+
 	if err := r.reconcileNamespace(ctx, cluster); err != nil {
 		return err
 	}
@@ -139,7 +146,44 @@ func (r *ZonesClusterOperatorReconciler) reconcileResources(ctx context.Context,
 }
 
 func (r *ZonesClusterOperatorReconciler) reconcileDelete(ctx context.Context, cluster *zonesv1alpha1.ZonesCluster) (ctrl.Result, error) {
-	return ctrl.Result{Requeue: true}, nil
+	log := logf.FromContext(ctx)
+
+	if !controllerutil.ContainsFinalizer(cluster, zonesv1alpha1.FinalizerName) {
+		return ctrl.Result{}, nil
+	}
+
+	if !r.IsDeleting(cluster) {
+		status.SetZonesClusterCondition(cluster, status.NewZonesClusterDeleting(cluster))
+		cluster.Status.Phase = zonesv1alpha1.OperationDeleting
+
+		if err := r.Client.Status().Update(ctx, cluster); err != nil {
+			return ctrl.Result{}, err
+		}
+	}
+
+	namespaceName := cluster.Spec.Namespace
+	req := provisioner.Request{
+		ReleaseName: cluster.Spec.Name,
+		Namespace:   cluster.Spec.Namespace,
+	}
+
+	if err := r.provisioner.Uninstall(ctx, req); err != nil {
+		return ctrl.Result{}, fmt.Errorf("uninstalling vCluster release %q: %w", req.ReleaseName, err)
+	}
+
+	namespace := corev1.Namespace{Name: namespaceName}
+	if err := r.Delete(ctx, &namespace); err != nil && !errors.IsNotFound(err) {
+		return ctrl.Result{}, fmt.Errorf("deleting namespace %q: %w", namespaceName, err)
+	}
+
+	controllerutil.RemoveFinalizer(cluster, zonesv1alpha1.FinalizerName)
+	if err := r.Update(ctx, cluster); err != nil {
+		return ctrl.Result{}, fmt.Errorf("updating cluster %q: %w", cluster.Name, err)
+	}
+
+	log.Info("zone deleted", "zone", cluster.Name, "namespace", namespaceName)
+
+	return ctrl.Result{}, nil
 }
 
 // reconcileNamespace reconciles the namespace for the cluster.
@@ -274,6 +318,11 @@ func (r *ZonesClusterOperatorReconciler) IsAccepted(obj *zonesv1alpha1.ZonesClus
 // IsCreating ...
 func (r *ZonesClusterOperatorReconciler) IsCreating(obj *zonesv1alpha1.ZonesCluster) bool {
 	return utilx.Or(obj.Status.Conditions == nil, slices.Len(0, obj.Status.Conditions...))
+}
+
+// IsDeleting ...
+func (r *ZonesClusterOperatorReconciler) IsDeleting(obj *zonesv1alpha1.ZonesCluster) bool {
+	return obj.Status.Phase == zonesv1alpha1.OperationDeleting
 }
 
 // IsSynchronized ...

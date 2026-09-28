@@ -115,6 +115,41 @@ func (h *HelmProvisioner) Install(ctx context.Context, req Request) error {
 	return nil
 }
 
+// Uninstall is uninstalling the Helm release.
+func (h *HelmProvisioner) Uninstall(ctx context.Context, req Request) error {
+	log := logf.FromContext(ctx).WithName("helm")
+
+	cfg := new(action.Configuration)
+	getter := &restClientGetter{
+		restConfig: h.Opts.RestConfig,
+		namespace:  req.Namespace,
+	}
+
+	err := cfg.Init(getter, req.Namespace, "secret", func(format string, v ...any) {
+		log.V(1).Info(fmt.Sprintf(format, v...))
+	})
+	if err != nil {
+		return err
+	}
+
+	rc, err := registry.NewClient()
+	if err != nil {
+		return fmt.Errorf("creating helm registry client: %w", err)
+	}
+
+	cfg.RegistryClient = rc
+
+	uninstall := action.NewUninstall(cfg)
+	uninstall.IgnoreNotFound = true
+	uninstall.Wait = false
+
+	if _, err := uninstall.Run(req.ReleaseName); err != nil {
+		return fmt.Errorf("uninstalling vcluster release %s: %w", req.ReleaseName, err)
+	}
+
+	return nil
+}
+
 // Status gets the status of the Helm release.
 func (h *HelmProvisioner) Status(ctx context.Context, req Request) (string, error) {
 	log := logf.FromContext(ctx).WithName("helm")
@@ -125,7 +160,7 @@ func (h *HelmProvisioner) Status(ctx context.Context, req Request) (string, erro
 		namespace:  req.Namespace,
 	}
 
-	err := cfg.Init(getter, req.Namespace, "secret", func(format string, v ...interface{}) {
+	err := cfg.Init(getter, req.Namespace, "secret", func(format string, v ...any) {
 		log.V(1).Info(fmt.Sprintf(format, v...))
 	})
 	if err != nil {
@@ -171,8 +206,6 @@ func (h *HelmProvisioner) install(ctx context.Context, cfg *action.Configuration
 	}
 
 	values := map[string]interface{}{}
-
-	fmt.Println(ch)
 
 	_, err = install.RunWithContext(ctx, ch, values)
 	if err != nil {

@@ -20,6 +20,8 @@ const (
 	ConditionTypeSynchronized  = "Synchronized"
 	ConditionTypeFailed        = "Failed"
 	ConditionTypePending       = "Pending"
+	ConditionTypeDeleting      = "Deleting"
+	ConditionTypeCompleted     = "Completed"
 )
 
 const (
@@ -27,6 +29,7 @@ const (
 	ConditionReasonPending      = "Pending"
 	ConditionReasonSynchronized = "Synchronized"
 	ConditionReasonFailed       = "Failed"
+	ConditionReasonDeleting     = "Deleting"
 )
 
 const (

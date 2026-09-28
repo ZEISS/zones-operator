@@ -47,6 +47,18 @@ func NewZonesClusterFailed(obj *zonesv1alpha1.ZonesCluster, err error) metav1.Co
 	}
 }
 
+// NewZonesClusterDeleting creates the deleting condition in cluster conditions.
+func NewZonesClusterDeleting(obj *zonesv1alpha1.ZonesCluster) metav1.Condition {
+	return metav1.Condition{
+		Type:               zonesv1alpha1.ConditionTypeDeleting,
+		ObservedGeneration: obj.Generation,
+		Status:             metav1.ConditionTrue,
+		LastTransitionTime: metav1.Now(),
+		Message:            "cluster deleting",
+		Reason:             zonesv1alpha1.ConditionReasonDeleting,
+	}
+}
+
 // NewZonesClusterPending creates the provisioning started condition in cluster conditions.
 func NewZonesClusterPending(obj *zonesv1alpha1.ZonesCluster) metav1.Condition {
 	return metav1.Condition{
@@ -55,7 +67,7 @@ func NewZonesClusterPending(obj *zonesv1alpha1.ZonesCluster) metav1.Condition {
 		Status:             metav1.ConditionTrue,
 		LastTransitionTime: metav1.Now(),
 		Message:            "cluster pending",
-		Reason:             zonesv1alpha1.ConditionReasonPending,
+		Reason:             zonesv1alpha1.ConditionReasonCreated,
 	}
 }
 
