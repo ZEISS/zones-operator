@@ -173,18 +173,18 @@ require (
 	github.com/bep/golocales v0.2.0 // indirect
 	github.com/bep/goportabletext v0.2.0 // indirect
 	github.com/bep/helpers v0.12.0 // indirect
-	github.com/bep/imagemeta v0.17.2 // indirect
-	github.com/bep/lazycache v0.8.1 // indirect
+	github.com/bep/imagemeta v1.0.0 // indirect
+	github.com/bep/lazycache v0.9.0 // indirect
 	github.com/bep/logg v0.4.0 // indirect
 	github.com/bep/mclib v1.20401.20400 // indirect
 	github.com/bep/overlayfs v0.11.0 // indirect
 	github.com/bep/simplecobra v0.7.0 // indirect
 	github.com/bep/textandbinarywriter v0.1.0 // indirect
-	github.com/bep/tmc v0.6.0 // indirect
+	github.com/bep/tmc v0.7.0 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/bitfield/gotestdox v0.2.2 // indirect
 	github.com/bitnami/go-version v0.0.0-20250505154626-452e8c5ee607 // indirect
-	github.com/bits-and-blooms/bitset v1.24.6 // indirect
+	github.com/bits-and-blooms/bitset v1.25.0 // indirect
 	github.com/bkielbasa/cyclop v1.2.3 // indirect
 	github.com/blakesmith/ar v0.0.0-20190502131153-809d4375e1fb // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
@@ -270,7 +270,7 @@ require (
 	github.com/ettle/strcase v0.2.0 // indirect
 	github.com/evanphx/json-patch v5.9.11+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.9.11 // indirect
-	github.com/evanw/esbuild v0.28.1 // indirect
+	github.com/evanw/esbuild v0.28.2 // indirect
 	github.com/exponent-io/jsonpath v0.0.0-20210407135951-1de76d718b3f // indirect
 	github.com/facebookincubator/nvdtools v0.1.5 // indirect
 	github.com/fatih/camelcase v1.0.0 // indirect
@@ -286,7 +286,7 @@ require (
 	github.com/fzipp/gocyclo v0.6.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.13 // indirect
 	github.com/gdamore/encoding v1.0.1 // indirect
-	github.com/getkin/kin-openapi v0.144.0 // indirect
+	github.com/getkin/kin-openapi v0.149.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/ghostiam/protogetter v1.0.1 // indirect
 	github.com/github/go-spdx/v2 v2.4.0 // indirect
@@ -336,7 +336,7 @@ require (
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/go-xmlfmt/xmlfmt v1.1.3 // indirect
 	github.com/gobuffalo/flect v1.0.3 // indirect
-	github.com/gobwas/glob v0.2.3 // indirect
+	github.com/gobwas/glob v1.0.0 // indirect
 	github.com/goccy/go-yaml v1.19.2 // indirect
 	github.com/gocsaf/csaf/v3 v3.5.1 // indirect
 	github.com/godoc-lint/godoc-lint v0.11.4 // indirect
@@ -345,9 +345,9 @@ require (
 	github.com/gohugoio/gift v0.2.0 // indirect
 	github.com/gohugoio/go-i18n/v2 v2.1.3-0.20251018145728-cfcc22d823c6 // indirect
 	github.com/gohugoio/go-radix v1.2.0 // indirect
-	github.com/gohugoio/hashstructure v0.6.0 // indirect
-	github.com/gohugoio/httpcache v0.8.0 // indirect
-	github.com/gohugoio/hugo v0.164.0 // indirect
+	github.com/gohugoio/hashstructure v1.0.0 // indirect
+	github.com/gohugoio/httpcache v0.9.0 // indirect
+	github.com/gohugoio/hugo v0.166.0 // indirect
 	github.com/gohugoio/hugo-goldmark-extensions/extras v0.7.0 // indirect
 	github.com/gohugoio/hugo-goldmark-extensions/passthrough v0.5.0 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
@@ -442,7 +442,7 @@ require (
 	github.com/kulti/thelper v0.7.1 // indirect
 	github.com/kunwardeep/paralleltest v1.0.15 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
-	github.com/kyokomi/emoji/v2 v2.2.13 // indirect
+	github.com/kyokomi/emoji/v2 v2.2.14 // indirect
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
 	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
 	github.com/ldez/exptostd v0.4.5 // indirect
@@ -529,7 +529,7 @@ require (
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.4.3 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
-	github.com/pierrec/lz4/v4 v4.1.22 // indirect
+	github.com/pierrec/lz4/v4 v4.1.27 // indirect
 	github.com/pjbgf/sha1cd v0.6.0 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -604,8 +604,8 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/sylabs/sif/v2 v2.24.0 // indirect
 	github.com/sylabs/squashfs v1.0.6 // indirect
-	github.com/tdewolff/minify/v2 v2.24.13 // indirect
-	github.com/tdewolff/parse/v2 v2.8.12 // indirect
+	github.com/tdewolff/minify/v2 v2.24.17 // indirect
+	github.com/tdewolff/parse/v2 v2.8.16 // indirect
 	github.com/tetafro/godot v1.5.6 // indirect
 	github.com/tetratelabs/wazero v1.12.0 // indirect
 	github.com/therootcompany/xz v1.0.1 // indirect
@@ -641,7 +641,7 @@ require (
 	github.com/yeya24/promlinter v0.3.0 // indirect
 	github.com/ykadowak/zerologlint v0.1.5 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
-	github.com/yuin/goldmark v1.8.2 // indirect
+	github.com/yuin/goldmark v1.8.6 // indirect
 	github.com/yuin/goldmark-emoji v1.0.6 // indirect
 	github.com/zclconf/go-cty v1.16.3 // indirect
 	gitlab.com/bosi/decorder v0.4.2 // indirect
@@ -671,7 +671,7 @@ require (
 	golang.org/x/crypto v0.57.0 // indirect
 	golang.org/x/exp v0.0.0-20260410095643-746e56fc9e2f // indirect
 	golang.org/x/exp/typeparams v0.0.0-20260820142414-ca536658362e // indirect
-	golang.org/x/image v0.43.0 // indirect
+	golang.org/x/image v0.45.0 // indirect
 	golang.org/x/mod v0.41.0 // indirect
 	golang.org/x/net v0.59.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
@@ -699,15 +699,11 @@ require (
 	gotest.tools/gotestsum v1.13.0 // indirect
 	helm.sh/helm v2.17.0+incompatible // indirect
 	honnef.co/go/tools v0.8.1 // indirect
+	howett.net/plist v1.0.1 // indirect
 	k8s.io/apiserver v0.37.1 // indirect
 	k8s.io/code-generator v0.37.1 // indirect
 	k8s.io/component-base v0.37.1 // indirect
 	k8s.io/component-helpers v0.37.0 // indirect
-	howett.net/plist v1.0.1 // indirect
-	k8s.io/apiserver v0.37.0 // indirect
-	k8s.io/code-generator v0.37.0 // indirect
-	k8s.io/component-base v0.37.0 // indirect
-	k8s.io/component-helpers v0.36.2 // indirect
 	k8s.io/gengo/v2 v2.0.0-20260408192533-25e2208e0dc3 // indirect
 	k8s.io/helm v2.17.0+incompatible // indirect
 	k8s.io/klog/v2 v2.140.0 // indirect
