@@ -26,7 +26,7 @@ global:
   # Default image used by all components
   image:
     # -- If defined, a repository applied to all zones deployments
-    repository: ghcr.io/zeiss/zones-operator/operator
+    repository: ghcr.io/zeiss/zones-operator
     # -- Overrides the global zones image tag whose default is the chart appVersion
     tag: ""
     # -- If defined, a imagePullPolicy applied to all zones deployments

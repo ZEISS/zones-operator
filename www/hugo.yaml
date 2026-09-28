@@ -25,7 +25,7 @@ menu:
   main:
     - name: GitHub
       weight: 80
-      url: "https://github.com/zeiss/charts"
+      url: "https://github.com/zeiss/zones-operator"
       params:
         icon: github
 
@@ -57,7 +57,7 @@ params:
     displayTags: true
   editPage:
     enable: true
-    base: "https://github.com/zeiss/charts/edit/main/content"
+    base: "https://github.com/zeiss/zones-operator/edit/main/content"
 
 outputs:
   home: [html, llms, markdown]
