@@ -29,15 +29,15 @@ archives:
     name_template: "operator_{{.Version}}_{{.Os}}_{{.Arch}}"
 
 dockers_v2:
-  - id: builder
+  - id: operator
     dockerfile: Dockerfile
     images:
-      - "{{ .Env.DOCKER_IMAGE_REPO }}/operator"
+      - "{{ .Env.DOCKER_IMAGE_REPO }}"
     tags:
       - "{{ .Version }}"
       - latest
     ids:
-      - builder
+      - operator
     platforms:
       - linux/amd64
       - linux/arm64
