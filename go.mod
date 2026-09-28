@@ -10,6 +10,9 @@ tool (
 	github.com/golangci/golangci-lint/v2/cmd/golangci-lint
 	github.com/google/ko
 	github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen
+	github.com/zeiss/pkg/cmd/helm/index
+	github.com/zeiss/pkg/cmd/helm/package
+	github.com/zeiss/pkg/cmd/helm/release
 	github.com/zeiss/pkg/cmd/helm/update
 	gotest.tools/gotestsum
 	k8s.io/code-generator
@@ -102,6 +105,7 @@ require (
 	github.com/OpenPeeDeeP/depguard/v2 v2.2.1 // indirect
 	github.com/ProtonMail/go-crypto v1.4.1 // indirect
 	github.com/STARRY-S/zip v0.2.3 // indirect
+	github.com/Songmu/retry v0.1.0 // indirect
 	github.com/acobaugh/osrelease v0.1.0 // indirect
 	github.com/adrg/xdg v0.5.3 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
@@ -373,6 +377,8 @@ require (
 	github.com/google/gnostic-models v0.7.1 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/go-containerregistry v0.21.7 // indirect
+	github.com/google/go-github/v90 v90.0.0 // indirect
+	github.com/google/go-querystring v1.2.0 // indirect
 	github.com/google/ko v0.19.1 // indirect
 	github.com/google/licensecheck v0.3.1 // indirect
 	github.com/google/pprof v0.0.0-20260802141513-ef3492d7dac3 // indirect
@@ -699,15 +705,11 @@ require (
 	gotest.tools/gotestsum v1.13.0 // indirect
 	helm.sh/helm v2.17.0+incompatible // indirect
 	honnef.co/go/tools v0.8.1 // indirect
+	howett.net/plist v1.0.1 // indirect
 	k8s.io/apiserver v0.37.1 // indirect
 	k8s.io/code-generator v0.37.1 // indirect
 	k8s.io/component-base v0.37.1 // indirect
 	k8s.io/component-helpers v0.37.0 // indirect
-	howett.net/plist v1.0.1 // indirect
-	k8s.io/apiserver v0.37.0 // indirect
-	k8s.io/code-generator v0.37.0 // indirect
-	k8s.io/component-base v0.37.0 // indirect
-	k8s.io/component-helpers v0.36.2 // indirect
 	k8s.io/gengo/v2 v2.0.0-20260408192533-25e2208e0dc3 // indirect
 	k8s.io/helm v2.17.0+incompatible // indirect
 	k8s.io/klog/v2 v2.140.0 // indirect
