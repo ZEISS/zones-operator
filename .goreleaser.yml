@@ -23,10 +23,7 @@ builds:
       - -s -w -X github.com/zeiss/zones-operator/main.version={{.Version}} -X github.com/zeiss/zones-operator/main.commit={{.Commit}} -X github.com/zeiss/zones-operator/main.date={{.Date}}
 
 archives:
-  - id: operator
-    builds:
-      - operator
-    name_template: "operator_{{.Version}}_{{.Os}}_{{.Arch}}"
+  - ids: [ operator]
 
 dockers_v2:
   - id: operator
@@ -70,7 +67,7 @@ changelog:
       - (?i)foo
 
 snapshot:
-  name_template: "{{.Tag}}"
+  version_template: "{{.Tag}}"
 
 checksum:
   name_template: "operator_checksums.txt"
