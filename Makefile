@@ -13,15 +13,21 @@ GO_RELEASER 		?= $(GO_TOOL) github.com/goreleaser/goreleaser/v2
 GO_TEST 			?= $(GO_TOOL) gotest.tools/gotestsum --format pkgname
 GO_AIR 				?= $(GO_TOOL) github.com/air-verse/air
 
+# HELM
+HELM_INDEX 			?= $(GO_TOOL) github.com/zeiss/pkg/cmd/helm/index
+HELM_PACKAGE 		?= $(GO_TOOL) github.com/zeiss/pkg/cmd/helm/package
+HELM_RELEASE 		?= $(GO_TOOL) github.com/zeiss/pkg/cmd/helm/release
+HELM_UPDATE 		?= $(GO_TOOL) github.com/zeiss/pkg/cmd/helm/update
+
 # Variables
-REPO 						?= $(GITHUB_REPO)
-TOKEN 					?= $(GITHUB_TOKEN)
+REPO 				?= $(GITHUB_REPO)
+TOKEN 				?= $(GITHUB_TOKEN)
 CLUSTER_NAME		?= kind-zones-operator
-CLUSTER_CONFIG	?= cluster.yaml
-BASE_DIR				?= $(CURDIR)
-PWD 						?= $(shell pwd)
-IMAGE_TAG_BASE 	?= ghcr.io/zeiss/zones-operator/operator
-IMG 						?= $(IMAGE_TAG_BASE):$(VERSION)
+CLUSTER_CONFIG		?= cluster.yaml
+BASE_DIR			?= $(CURDIR)
+PWD 				?= $(shell pwd)
+IMAGE_TAG_BASE 		?= ghcr.io/zeiss/zones-operator/operator
+IMG 				?= $(IMAGE_TAG_BASE):$(VERSION)
 
 ifeq ($(firstword $(MAKECMDGOALS)),$(TARGET))
   RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
