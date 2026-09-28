@@ -1,8 +1,11 @@
 project_name: zones-operator
 
+env:
+  - DOCKER_IMAGE_REPO={{ envOrDefault "DOCKER_IMAGE_REPO" "zones-operator" }}
+
 builds:
   - id: operator
-    binary: operator-{{.Os}}-{{.Arch}}
+    binary: operator
     main: main.go
     goos:
       - linux
@@ -16,8 +19,7 @@ builds:
     env:
       - CGO_ENABLED=0
     ldflags:
-      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}
-    no_unique_dist_dir: true
+      - -s -w -X github.com/zeiss/zones-operator/main.version={{.Version}} -X github.com/zeiss/zones-operator/main.commit={{.Commit}} -X github.com/zeiss/zones-operator/main.date={{.Date}}
 
 archives:
   - id: operator
@@ -25,24 +27,23 @@ archives:
       - operator
     name_template: "operator_{{.Version}}_{{.Os}}_{{.Arch}}"
 
-dockers:
-  - dockerfile: Dockerfile
-    goos: linux
-    goarch: amd64
+dockers_v2:
+  - id: builder
+    dockerfile: Dockerfile
+    images:
+      - "{{ .Env.DOCKER_IMAGE_REPO }}/operator"
+    tags:
+      - "{{ .Version }}"
+      - latest
     ids:
-      - operator
-    image_templates:
-      - "ghcr.io/zeiss/{{.ProjectName}}/operator:latest"
-      - "ghcr.io/zeiss/{{.ProjectName}}/operator:{{.Tag}}"
-      - "ghcr.io/zeiss/{{.ProjectName}}/operator"
-    build_flag_templates:
-      - "--pull"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.title={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--build-arg=BINARY=operator-linux-amd64"
-      - "--platform=linux/amd64"
+      - builder
+    platforms:
+      - linux/amd64
+      - linux/arm64
+    labels:
+      "org.opencontainers.image.created": "{{.Date}}"
+      "org.opencontainers.image.revision": "{{.FullCommit}}"
+      "org.opencontainers.image.version": "{{.Version}}"
 
 gomod:
   proxy: false
@@ -52,14 +53,14 @@ release:
 
 changelog:
   groups:
-    - title: Features
-      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
-      order: 0
-    - title: "Bug fixes"
-      regexp: '^.*?bug(\([[:word:]]+\))??!?:.+$'
-      order: 1
-    - title: Others
-      order: 999
+     - title: Features
+       regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+       order: 0
+     - title: "Bug fixes"
+       regexp: '^.*?bug(\([[:word:]]+\))??!?:.+$'
+       order: 1
+     - title: Others
+       order: 999
   sort: asc
   filters:
     exclude:
@@ -71,4 +72,4 @@ snapshot:
   name_template: "{{.Tag}}"
 
 checksum:
-  name_template: "zones_checksums.txt"
+  name_template: "operator_checksums.txt"
