@@ -2,14 +2,14 @@
 
 VERSION 				?= latest
 
-GO 							?= go
+GO 						?= go
 GO_TOOL 				?= $(GO) tool
-GO_HELM_UPDATE 	?= $(GO_RUN_TOOLS) github.com/zeiss/pkg/cmd/helm/update
+GO_HELM_UPDATE 			?= $(GO_RUN_TOOLS) github.com/zeiss/pkg/cmd/helm/update
 GO_KIND 				?= $(GO_TOOL) sigs.k8s.io/kind/cmd/kind
-GO_KUSTOMIZE 		?= $(GO_TOOL) sigs.k8s.io/kustomize/kustomize/v5
+GO_KUSTOMIZE 			?= $(GO_TOOL) sigs.k8s.io/kustomize/kustomize/v5
 GO_LINT 				?= $(GO_TOOL) github.com/golangci/golangci-lint/v2/cmd/golangci-lint
 GO_MOD 					?= $(shell ${GO} list -m)
-GO_RELEASER 		?= $(GO_TOOL) github.com/goreleaser/goreleaser/v2
+GO_RELEASER 			?= $(GO_TOOL) github.com/goreleaser/goreleaser/v2
 GO_TEST 				?= $(GO_TOOL) gotest.tools/gotestsum --format pkgname
 GO_AIR 					?= $(GO_TOOL) github.com/air-verse/air
 
@@ -20,14 +20,14 @@ HELM_RELEASE 		?= $(GO_TOOL) github.com/zeiss/pkg/cmd/helm/release
 HELM_UPDATE 		?= $(GO_TOOL) github.com/zeiss/pkg/cmd/helm/update
 
 # Variables
-REPO 						?= $(GITHUB_REPO)
-TOKEN 					?= $(GITHUB_TOKEN)
+REPO 				?= $(GITHUB_REPO)
+TOKEN 				?= $(GITHUB_TOKEN)
 CLUSTER_NAME		?= kind-zones-operator
-CLUSTER_CONFIG	?= cluster.yaml
-BASE_DIR				?= $(CURDIR)
-PWD 						?= $(shell pwd)
-IMAGE_TAG_BASE 	?= ghcr.io/zeiss/zones-operator/operator
-IMG 						?= $(IMAGE_TAG_BASE):$(VERSION)
+CLUSTER_CONFIG		?= cluster.yaml
+BASE_DIR			?= $(CURDIR)
+PWD 				?= $(shell pwd)
+IMAGE_TAG_BASE 		?= ghcr.io/zeiss/zones-operator/operator
+IMG 				?= $(IMAGE_TAG_BASE):$(VERSION)
 
 ifeq ($(firstword $(MAKECMDGOALS)),$(TARGET))
   RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
@@ -53,7 +53,7 @@ release: ## Create a release
 
 .PHONY: up
 up: ## Run the operator locally.
-	$(GO_RUN_TOOLS) github.com/zeiss/pkg/cmd/runproc -f ${PWD}/Procfile -l ${PWD}/Procfile.local
+	$(GO_TOOL) github.com/zeiss/pkg/cmd/runproc -f ${PWD}/Procfile -l ${PWD}/Procfile.local
 
 .PHONY: start
 start: ## Run the operator locally with hot reloading.
@@ -121,6 +121,10 @@ cluster-create: ## Create a local Kubernetes cluster using kind.
 cluster-delete: ## Destroy the local Kubernetes cluster using kind.
 	$(GO_KIND) delete cluster --name $(CLUSTER_NAME)
 	@echo "✅ Kind cluster destroyed successfully."
+
+.PHONY: cluster-load
+cluster-load: ## Load the local Kubernetes cluster using kind.
+	$(GO_KIND) load docker-image --name $(CLUSTER_NAME) $(IMG)
 
 .PHONY: cluster-config
 cluster-config: ## Start the local Kubernetes cluster using kind.

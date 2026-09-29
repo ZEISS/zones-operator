@@ -15,6 +15,7 @@ tool (
 	github.com/zeiss/pkg/cmd/helm/package
 	github.com/zeiss/pkg/cmd/helm/release
 	github.com/zeiss/pkg/cmd/helm/update
+	github.com/zeiss/pkg/cmd/runproc
 	gotest.tools/gotestsum
 	k8s.io/code-generator
 	k8s.io/code-generator/cmd/client-gen
@@ -268,6 +269,7 @@ require (
 	github.com/containerd/typeurl/v2 v2.2.3 // indirect
 	github.com/coreos/go-oidc/v3 v3.18.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.7 // indirect
+	github.com/creack/pty v1.1.24 // indirect
 	github.com/curioswitch/go-reassign v0.3.0 // indirect
 	github.com/cyberphone/json-canonicalization v0.0.0-20241213102144-19d51d7fe467 // indirect
 	github.com/cyphar/filepath-securejoin v0.7.0 // indirect
