@@ -27,11 +27,11 @@ var (
 var build = fmt.Sprintf("%s (%s) (%s)", version, commit, date)
 
 type flags struct {
+	enableHTTP2          bool
 	enableLeaderElection bool
 	metricsAddr          string
 	probeAddr            string
 	secureMetrics        bool
-	enableHTTP2          bool
 }
 
 var f = &flags{}
@@ -57,7 +57,6 @@ func init() {
 	rootCmd.Flags().BoolVar(&f.enableHTTP2, "enable-http2", f.enableHTTP2, "enable http/2")
 
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-
 	utilruntime.Must(zonesv1alpha1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }

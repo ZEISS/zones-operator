@@ -12,6 +12,7 @@ import (
 	"github.com/zeiss/zones-operator/pkg/status"
 
 	"github.com/zeiss/pkg/conv"
+	"github.com/zeiss/pkg/mapx"
 	"github.com/zeiss/pkg/slices"
 	"github.com/zeiss/pkg/utilx"
 	appsv1 "k8s.io/api/apps/v1"
@@ -48,8 +49,8 @@ const (
 type ZonesClusterOperatorReconciler struct {
 	client.Client
 	provisioner *provisioners.HelmProvisioner
-	Scheme      *runtime.Scheme
 	Recorder    record.EventRecorder
+	Scheme      *runtime.Scheme
 }
 
 // NewZonesClusterOperatorReconciler ...
@@ -260,6 +261,7 @@ func (r *ZonesClusterOperatorReconciler) vclusterReady(ctx context.Context, oper
 	if err != nil {
 		return false, "", err
 	}
+
 	if !workloadReady {
 		return false, reason, nil
 	}
@@ -276,7 +278,7 @@ func (r *ZonesClusterOperatorReconciler) vclusterReady(ctx context.Context, oper
 		return false, "", err
 	}
 
-	if _, ok := secret.Data[zonesv1alpha1.KubeconfigSecretKey]; !ok {
+	if ok := mapx.Exists(secret.Data, zonesv1alpha1.KubeconfigSecretKey); !ok {
 		return false, fmt.Sprintf("kubeconfig secret %s/%s missing key %q", namespace, secretName, zonesv1alpha1.KubeconfigSecretKey), nil
 	}
 
@@ -325,32 +327,32 @@ func (r *ZonesClusterOperatorReconciler) vClusterDeploymentReady(ctx context.Con
 	return false, fmt.Sprintf("waiting for vCluster workload %s/%s to appear", namespace, name), nil
 }
 
-// IsAccepted ...
+// IsAccepted returns true if the ZonesCluster is accepted, false otherwise.
 func (r *ZonesClusterOperatorReconciler) IsAccepted(obj *zonesv1alpha1.ZonesCluster) bool {
 	return obj.Status.Phase == zonesv1alpha1.OperationAccepted
 }
 
-// IsCreating ...
+// IsCreating returns true if the ZonesCluster is creating, false otherwise.
 func (r *ZonesClusterOperatorReconciler) IsCreating(obj *zonesv1alpha1.ZonesCluster) bool {
 	return utilx.Or(obj.Status.Conditions == nil, slices.Len(0, obj.Status.Conditions...))
 }
 
-// IsDeleting ...
+// IsDeleting returns true if the ZonesCluster is deleting, false otherwise.
 func (r *ZonesClusterOperatorReconciler) IsDeleting(obj *zonesv1alpha1.ZonesCluster) bool {
 	return obj.Status.Phase == zonesv1alpha1.OperationDeleting
 }
 
-// IsSynchronized ...
+// IsSynchronized returns true if the ZonesCluster is synchronized, false otherwise.
 func (r *ZonesClusterOperatorReconciler) IsSynchronized(obj *zonesv1alpha1.ZonesCluster) bool {
 	return obj.Status.Phase == zonesv1alpha1.OperationSynchronized
 }
 
-// IsPaused ...
+// IsPaused returns true if the ZonesCluster is paused, false otherwise.
 func (r *ZonesClusterOperatorReconciler) IsPaused(obj *zonesv1alpha1.ZonesCluster) bool {
 	return obj.Status.ControlPaused
 }
 
-// MarkPhase ...
+// MarkPhase marks the phase of the ZonesCluster and updates the status.
 func (r *ZonesClusterOperatorReconciler) MarkPhase(ctx context.Context, obj *zonesv1alpha1.ZonesCluster, condition metav1.Condition, phase zonesv1alpha1.OperationPhase) error {
 	status.SetZonesClusterCondition(obj, condition)
 	obj.Status.Phase = phase
@@ -362,7 +364,7 @@ func (r *ZonesClusterOperatorReconciler) MarkPhase(ctx context.Context, obj *zon
 	return nil
 }
 
-// ManageError ...
+// ManageError handles errors during reconciliation and updates the status accordingly.
 func (r *ZonesClusterOperatorReconciler) ManageError(ctx context.Context, obj *zonesv1alpha1.ZonesCluster, err error) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 	logger.Error(err, "reconciling cluster", "operator", obj.Name)
@@ -388,7 +390,7 @@ func (r *ZonesClusterOperatorReconciler) ManageError(ctx context.Context, obj *z
 	}, nil
 }
 
-// ManageSuccess ...
+// ManageSuccess marks the cluster as synchronized and updates the status.
 func (r *ZonesClusterOperatorReconciler) ManageSuccess(ctx context.Context, cluster *zonesv1alpha1.ZonesCluster) (ctrl.Result, error) {
 	if r.IsSynchronized(cluster) {
 		return ctrl.Result{}, nil
@@ -406,11 +408,6 @@ func (r *ZonesClusterOperatorReconciler) ManageSuccess(ctx context.Context, clus
 	r.Recorder.Event(cluster, corev1.EventTypeNormal, conv.String(EventReasonClusterSynchronized), "cluster synchronized")
 
 	return ctrl.Result{}, nil
-}
-
-// IsControlPaused ...
-func (r *ZonesClusterOperatorReconciler) IsControlPaused(obj *zonesv1alpha1.ZonesCluster) bool {
-	return obj.Status.ControlPaused
 }
 
 // SetupWithManager sets up the controller with the Manager.
