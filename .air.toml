@@ -2,17 +2,20 @@
 root = "."
 tmp_dir = "tmp"
 
+env_files = [".env"]
+
 [build]
-  cmd = "go build -o ./tmp/main main.go"
-  bin = "./tmp/main"
+  cmd = "go build -o ./tmp/main ."
+  bin = "tmp/main"
   full_bin = "dlv exec ./tmp/main --listen=127.0.0.1:2345 --headless=true --api-version=2 --accept-multiclient --continue --log -- "
   delay = 1000 # ms
+  send_interrupt = true
   exclude_dir = ["assets", "tmp", "vendor"]
   include_ext = ["go", "tpl", "tmpl", "html"]
   exclude_regex = ["_test\\.go"]
 
 [misc]
-  clean_on_exit = true
+clean_on_exit = true
 
 [screen]
   clear_on_rebuild = true

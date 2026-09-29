@@ -1,4 +1,4 @@
-package provisioner
+package provisioners
 
 import (
 	"context"
@@ -19,6 +19,14 @@ type Request struct {
 	ValuesOverrides map[string]any
 	// RepoURL is the URL of the Helm repository to use.
 	RepoURL string
+}
+
+// NewRequest returns a new Request with the given release name and namespace.
+func NewRequest() Request {
+	return Request{
+		ChartVersion: DefaultChartVersion,
+		RepoURL:      DefaultChartRef,
+	}
 }
 
 var (

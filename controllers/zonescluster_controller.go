@@ -2,12 +2,13 @@ package controllers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math"
 	"time"
 
 	zonesv1alpha1 "github.com/zeiss/zones-operator/api/v1alpha1"
-	"github.com/zeiss/zones-operator/pkg/provisioner"
+	"github.com/zeiss/zones-operator/pkg/provisioners"
 	"github.com/zeiss/zones-operator/pkg/status"
 
 	"github.com/zeiss/pkg/conv"
@@ -46,7 +47,7 @@ const (
 // ZonesClusterOperatorReconciler ...
 type ZonesClusterOperatorReconciler struct {
 	client.Client
-	provisioner *provisioner.HelmProvisioner
+	provisioner *provisioners.HelmProvisioner
 	Scheme      *runtime.Scheme
 	Recorder    record.EventRecorder
 }
@@ -56,7 +57,7 @@ func NewZonesClusterOperatorReconciler(mgr ctrl.Manager) *ZonesClusterOperatorRe
 	return &ZonesClusterOperatorReconciler{
 		Client:      mgr.GetClient(),
 		Scheme:      mgr.GetScheme(),
-		provisioner: provisioner.NewHelmProvisioner(provisioner.WithRestConfig(mgr.GetConfig())),
+		provisioner: provisioners.NewHelmProvisioner(provisioners.WithRestConfig(mgr.GetConfig())),
 		Recorder:    mgr.GetEventRecorderFor(EventRecorderLabel),
 	}
 }
@@ -162,7 +163,7 @@ func (r *ZonesClusterOperatorReconciler) reconcileDelete(ctx context.Context, cl
 	}
 
 	namespaceName := cluster.Spec.Namespace
-	req := provisioner.Request{
+	req := provisioners.Request{
 		ReleaseName: cluster.Spec.Name,
 		Namespace:   cluster.Spec.Namespace,
 	}
@@ -216,11 +217,25 @@ func (r *ZonesClusterOperatorReconciler) reconcileNamespace(ctx context.Context,
 
 // reconcileVCluster reconciles the vcluster workload for the given operator.
 func (r *ZonesClusterOperatorReconciler) reconcileVCluster(ctx context.Context, cluster *zonesv1alpha1.ZonesCluster) error {
-	req := provisioner.Request{
-		ReleaseName:  cluster.Spec.Name,
-		Namespace:    cluster.Spec.Namespace,
-		ChartVersion: provisioner.DefaultChartVersion,
-		RepoURL:      provisioner.DefaultChartRef,
+	req := provisioners.NewRequest()
+	req.ReleaseName = cluster.Spec.Name
+	req.Namespace = cluster.Spec.Namespace
+
+	if utilx.NotEmpty(cluster.Spec.Config.KubernetesVersion) {
+		req.KubernetesVersion = cluster.Spec.Config.KubernetesVersion
+	}
+
+	if utilx.NotEmpty(cluster.Spec.Config.Version) {
+		req.ChartVersion = cluster.Spec.Config.Version
+	}
+
+	if utilx.NotNil(cluster.Spec.Config.ValuesOverrides) && slices.GreaterThen(0, cluster.Spec.Config.ValuesOverrides.Raw) {
+		overrides := map[string]any{}
+		if err := json.Unmarshal(cluster.Spec.Config.ValuesOverrides.Raw, &overrides); err != nil {
+			return fmt.Errorf("invalid vcluster value overrides: %w", err)
+		}
+
+		req.ValuesOverrides = overrides
 	}
 
 	if err := r.provisioner.Install(ctx, req); err != nil {

@@ -17,6 +17,25 @@ helm repo update
 helm search repo zones-operator
 ```
 
+## Usage
+
+The `zones-operator` uses a `ZonesCluster` custom resource to define the desired state of a vCluster zone.
+
+```
+apiVersion: zones.zeiss.com/v1alpha1
+kind: ZonesCluster
+metadata:
+  name: team-delta
+spec:
+  name: team-delta
+  namespace: team-delta
+  config:
+    valuesOverrides: {}
+    version: 0.37.0
+```
+
+> `config` is used to override the default values of the vCluster release.
+
 ## License
 
 [Apache 2.0](/LICENSE)

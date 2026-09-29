@@ -104,7 +104,3 @@ type ZonesClusterList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []ZonesCluster `json:"items"`
 }
-
-func init() {
-	SchemeBuilder.Register(&ZonesCluster{}, &ZonesClusterList{})
-}
