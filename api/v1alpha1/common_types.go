@@ -33,9 +33,8 @@ const (
 )
 
 const (
-	FinalizerName              = "zones.zeiss.com/finalizer"
-	AccountServerFinalizerName = "zones.zeiss.com/account-server-finalizer"
-	OwnerAnnotation            = "zones.zeiss.com/owner"
+	FinalizerName   = "zones.zeiss.com/finalizer"
+	OwnerAnnotation = "zones.zeiss.com/owner"
 )
 
 type OperationPhase string

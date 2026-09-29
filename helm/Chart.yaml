@@ -11,8 +11,8 @@ sources:
   - https://github.com/zeiss/zones-operator/tree/main/helm/charts/zones-operator
   - https://github.com/zeiss/zones-operator
 keywords:
-  - nats
-  - accounting
+  - vcluster
+  - zones
 maintainers:
   - name: Sebastian Doell
     url: https://github.com/katallaxie

@@ -41,13 +41,7 @@ rules:
 - apiGroups:
   - zones.zeiss.com
   resources:
-  - natskeys
-  - natsaccounts
-  - natsoperators
-  - natsusers
-  - natsconfigs
-  - natsgateways
-  - natsactivations
+  - zonesclusters
   verbs:
   - create
   - delete
@@ -59,25 +53,13 @@ rules:
 - apiGroups:
   - zones.zeiss.com
   resources:
-  - natsaccounts/finalizers
-  - natsoperators/finalizers
-  - natsusers/finalizers
-  - natsconfigs/finalizers
-  - natsgateways/finalizers
-  - natsactivations/finalizers
-  - natskeys/finalizers
+  - zonesclusters/finalizers
   verbs:
   - update
 - apiGroups:
   - zones.zeiss.com
   resources:
-  - natsoperators/status
-  - natsusers/status
-  - natsgateways/status
-  - natsconfigs/status
-  - natsaccounts/status
-  - natsactivations/status
-  - natskeys/status
+  - zonesclusters/status
   verbs:
   - get
   - patch

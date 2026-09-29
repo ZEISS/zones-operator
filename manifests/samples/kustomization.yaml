@@ -1,6 +1,4 @@
 ## Append samples you want in your CSV to this file as resources ##
 resources:
-- nats_v1alpha1_natsoperator.yaml
-- nats_v1alpha1_natsaccount.yaml
-- nats_v1alpha1_natsuser.yaml
+- zones_v1alpha1_zonescluster.yaml
 #+kubebuilder:scaffold:manifestskustomizesamples

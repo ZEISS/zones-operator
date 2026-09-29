@@ -30,13 +30,13 @@ rules:
 - apiGroups:
   - zones.zeiss.com
   resources:
-  - natsaccounts/finalizers
+  - zonesclusters/finalizers
   verbs:
   - update
 - apiGroups:
   - zones.zeiss.com
   resources:
-  - natsaccounts/status
+  - zonesclusters/status
   verbs:
   - get
   - patch
@@ -56,13 +56,13 @@ rules:
 - apiGroups:
   - zones.zeiss.com
   resources:
-  - natsoperators/finalizers
+  - zonesclusters/finalizers
   verbs:
   - update
 - apiGroups:
   - zones.zeiss.com
   resources:
-  - natsoperators/status
+  - zonesclusters/status
   verbs:
   - get
   - patch
@@ -82,13 +82,13 @@ rules:
 - apiGroups:
   - zones.zeiss.com
   resources:
-  - natsusers/finalizers
+  - zonesclusters/finalizers
   verbs:
   - update
 - apiGroups:
   - zones.zeiss.com
   resources:
-  - natsusers/status
+  - zonesclusters/status
   verbs:
   - get
   - patch
