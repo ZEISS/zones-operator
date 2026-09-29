@@ -21,7 +21,7 @@ helm search repo zones-operator
 
 The `zones-operator` uses a `ZonesCluster` custom resource to define the desired state of a vCluster zone.
 
-```
+```yaml
 apiVersion: zones.zeiss.com/v1alpha1
 kind: ZonesCluster
 metadata:
