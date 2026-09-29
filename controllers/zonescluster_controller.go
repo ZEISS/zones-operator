@@ -350,6 +350,18 @@ func (r *ZonesClusterOperatorReconciler) IsPaused(obj *zonesv1alpha1.ZonesCluste
 	return obj.Status.ControlPaused
 }
 
+// MarkPhase ...
+func (r *ZonesClusterOperatorReconciler) MarkPhase(ctx context.Context, obj *zonesv1alpha1.ZonesCluster, condition metav1.Condition, phase zonesv1alpha1.OperationPhase) error {
+	status.SetZonesClusterCondition(obj, condition)
+	obj.Status.Phase = phase
+
+	if err := r.Client.Status().Update(ctx, obj); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ManageError ...
 func (r *ZonesClusterOperatorReconciler) ManageError(ctx context.Context, obj *zonesv1alpha1.ZonesCluster, err error) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
