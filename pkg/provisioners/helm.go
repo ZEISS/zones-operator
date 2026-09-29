@@ -112,7 +112,7 @@ func (h *HelmProvisioner) Install(ctx context.Context, req Request) error {
 		return h.install(ctx, cfg, req)
 	}
 
-	return nil
+	return h.upgrade(ctx, cfg, req)
 }
 
 // Uninstall is uninstalling the Helm release.
@@ -190,6 +190,7 @@ func (h *HelmProvisioner) install(ctx context.Context, cfg *action.Configuration
 	install.Namespace = req.Namespace
 	install.CreateNamespace = false
 	install.Wait = false
+
 	install.ChartPathOptions = action.ChartPathOptions{
 		RepoURL: req.RepoURL,
 		Version: req.ChartVersion,
@@ -205,11 +206,37 @@ func (h *HelmProvisioner) install(ctx context.Context, cfg *action.Configuration
 		return fmt.Errorf("loading chart from path %q: %w", registry.ChartLayerMediaType, err)
 	}
 
-	values := map[string]interface{}{}
-
-	_, err = install.RunWithContext(ctx, ch, values)
+	_, err = install.RunWithContext(ctx, ch, req.ValuesOverrides)
 	if err != nil {
 		return fmt.Errorf("failed to install chart: %q: %w", req.ReleaseName, err)
+	}
+
+	return nil
+}
+
+func (h *HelmProvisioner) upgrade(ctx context.Context, cfg *action.Configuration, req Request) error {
+	upgrade := action.NewUpgrade(cfg)
+	upgrade.Namespace = req.Namespace
+	upgrade.Wait = false
+	upgrade.MaxHistory = 5
+
+	upgrade.ChartPathOptions = action.ChartPathOptions{
+		RepoURL: req.RepoURL,
+		Version: req.ChartVersion,
+	}
+
+	chartPath, err := upgrade.ChartPathOptions.LocateChart(DefaultChartName, h.Settings)
+	if err != nil {
+		return fmt.Errorf("locating chart %q: %w", req.RepoURL, err)
+	}
+
+	ch, err := loader.Load(chartPath)
+	if err != nil {
+		return fmt.Errorf("loading chart from path %q: %w", registry.ChartLayerMediaType, err)
+	}
+
+	if _, err = upgrade.RunWithContext(ctx, req.ReleaseName, ch, req.ValuesOverrides); err != nil {
+		return fmt.Errorf("failed to upgrade chart: %q: %w", req.ReleaseName, err)
 	}
 
 	return nil

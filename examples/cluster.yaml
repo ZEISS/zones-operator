@@ -6,5 +6,5 @@ spec:
   name: team-delta
   namespace: team-delta
   config:
-    version: 0.37.1
+    version: 0.37.0
     valuesOverrides: {}
