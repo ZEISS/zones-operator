@@ -30,7 +30,7 @@ require (
 	github.com/zeiss/pkg v0.2.4
 	helm.sh/helm/v3 v3.22.1
 	k8s.io/api v0.37.2
-	k8s.io/apiextensions-apiserver v0.37.1
+	k8s.io/apiextensions-apiserver v0.37.2
 	k8s.io/apimachinery v0.37.2
 	k8s.io/cli-runtime v0.37.2
 	k8s.io/client-go v0.37.2
@@ -790,9 +790,9 @@ require (
 	helm.sh/helm v2.17.0+incompatible // indirect
 	honnef.co/go/tools v0.8.1 // indirect
 	howett.net/plist v1.0.1 // indirect
-	k8s.io/apiserver v0.37.1 // indirect
-	k8s.io/code-generator v0.37.1 // indirect
-	k8s.io/component-base v0.37.1 // indirect
+	k8s.io/apiserver v0.37.2 // indirect
+	k8s.io/code-generator v0.37.2 // indirect
+	k8s.io/component-base v0.37.2 // indirect
 	k8s.io/component-helpers v0.37.1 // indirect
 	k8s.io/gengo/v2 v2.0.0-20260408192533-25e2208e0dc3 // indirect
 	k8s.io/helm v2.17.0+incompatible // indirect
